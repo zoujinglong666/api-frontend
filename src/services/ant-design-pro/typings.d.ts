@@ -23,12 +23,6 @@ declare namespace API {
     phone?: string;
   };
 
-  type LoginResult = {
-    status?: string;
-    type?: string;
-    currentAuthority?: string;
-  };
-
   type PageParams = {
     current?: number;
     pageSize?: number;
