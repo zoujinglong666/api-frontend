@@ -62,10 +62,14 @@ export async function updateRule(options?: { [key: string]: any }) {
   });
 }
 
-/** 新建规则 POST /api/rule */
-export async function addRule(options?: { [key: string]: any }) {
-  return request<API.RuleListItem>('/api/rule', {
+export async function addInterfaceInfo(body: any, options?: { [key: string]: any }) {
+  console.log(body);
+  return request<any>('/api/interfaceInfo/add', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify(body),
     ...(options || {}),
   });
 }

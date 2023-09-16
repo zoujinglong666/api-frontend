@@ -1,13 +1,15 @@
-import { addRule, ListInterfaceInfo, removeRule, updateRule } from '@/services/ant-design-pro/api';
+import {
+  addInterfaceInfo,
+  ListInterfaceInfo,
+  removeRule,
+  updateRule,
+} from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
   FooterToolbar,
-  ModalForm,
   PageContainer,
   ProDescriptions,
-  ProFormText,
-  ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
@@ -15,80 +17,14 @@ import { Button, Drawer, message } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
-
-/**
- * @en-US Add node
- * @zh-CN 添加节点
- * @param fields
- */
-const handleAdd = async (fields: API.RuleListItem) => {
-  const hide = message.loading('正在添加');
-  try {
-    await addRule({ ...fields });
-    hide();
-    message.success('Added successfully');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Adding failed, please try again!');
-    return false;
-  }
-};
-
-/**
- * @en-US Update node
- * @zh-CN 更新节点
- *
- * @param fields
- */
-const handleUpdate = async (fields: FormValueType) => {
-  const hide = message.loading('Configuring');
-  try {
-    await updateRule({
-      name: fields.name,
-      desc: fields.desc,
-      key: fields.key,
-    });
-    hide();
-
-    message.success('Configuration is successful');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Configuration failed, please try again!');
-    return false;
-  }
-};
-
-/**
- *  Delete node
- * @zh-CN 删除节点
- *
- * @param selectedRows
- */
-const handleRemove = async (selectedRows: API.RuleListItem[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
-  try {
-    await removeRule({
-      key: selectedRows.map((row) => row.key),
-    });
-    hide();
-    message.success('Deleted successfully and will refresh soon');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Delete failed, please try again');
-    return false;
-  }
-};
+import AddForm from '@/pages/TableList/components/addForm';
 
 const TableList: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
    * @zh-CN 新建窗口的弹窗
    *  */
-  const [createModalOpen, handleModalOpen] = useState<boolean>(false);
+  const [addModalOpen, handleAddModalOpen] = useState<boolean>(false);
   /**
    * @en-US The pop-up window of the distribution update window
    * @zh-CN 分布更新窗口的弹窗
@@ -106,6 +42,75 @@ const TableList: React.FC = () => {
    * @zh-CN 国际化配置
    * */
   const intl = useIntl();
+  /**
+   * @en-US Add node
+   * @zh-CN 添加节点
+   * @param fields
+   */
+  const handleAdd = async (fields: any) => {
+    const hide = message.loading('正在添加');
+    try {
+      const res = await addInterfaceInfo({ ...fields });
+      if (res.code === 0) {
+        hide();
+        message.success('添加成功');
+        handleAddModalOpen(false);
+        return true;
+      }
+    } catch (error) {
+      hide();
+      message.error('添加失败');
+      return false;
+    }
+  };
+
+  /**
+   * @en-US Update node
+   * @zh-CN 更新节点
+   *
+   * @param fields
+   */
+  const handleUpdate = async (fields: FormValueType) => {
+    const hide = message.loading('Configuring');
+    try {
+      await updateRule({
+        name: fields.name,
+        desc: fields.desc,
+        key: fields.key,
+      });
+      hide();
+
+      message.success('Configuration is successful');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('Configuration failed, please try again!');
+      return false;
+    }
+  };
+
+  /**
+   *  Delete node
+   * @zh-CN 删除节点
+   *
+   * @param selectedRows
+   */
+  const handleRemove = async (selectedRows: API.RuleListItem[]) => {
+    const hide = message.loading('正在删除');
+    if (!selectedRows) return true;
+    try {
+      await removeRule({
+        key: selectedRows.map((row) => row.key),
+      });
+      hide();
+      message.success('Deleted successfully and will refresh soon');
+      return true;
+    } catch (error) {
+      hide();
+      message.error('Delete failed, please try again');
+      return false;
+    }
+  };
 
   const columns: ProColumns<API.RuleListItem>[] = [
     {
@@ -133,8 +138,33 @@ const TableList: React.FC = () => {
       dataIndex: 'method',
     },
     {
+      title: '接口类型',
+      dataIndex: 'type',
+    },
+    {
+      title: '请求头',
+      dataIndex: 'requestHeader',
+    },
+    {
+      title: '响应头',
+      dataIndex: 'reponseHeader',
+    },
+    {
+      title: 'url',
+      dataIndex: 'url',
+    },
+
+    {
       title: '创建时间',
       dataIndex: 'createTime',
+      valueType: 'dateTime',
+      hideInForm: true,
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updateTime',
+      valueType: 'dateTime',
+      hideInForm: true,
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleStatus" defaultMessage="Status" />,
@@ -177,6 +207,7 @@ const TableList: React.FC = () => {
     },
   ];
 
+  // @ts-ignore
   return (
     <PageContainer>
       <ProTable<API.RuleListItem, API.PageParams>
@@ -194,7 +225,7 @@ const TableList: React.FC = () => {
             type="primary"
             key="primary"
             onClick={() => {
-              handleModalOpen(true);
+              handleAddModalOpen(true);
             }}
           >
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
@@ -270,41 +301,6 @@ const TableList: React.FC = () => {
           </Button>
         </FooterToolbar>
       )}
-      <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
-        width="400px"
-        open={createModalOpen}
-        onOpenChange={handleModalOpen}
-        onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
-          if (success) {
-            handleModalOpen(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-      >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="Rule name is required"
-                />
-              ),
-            },
-          ]}
-          width="md"
-          name="name"
-        />
-        <ProFormTextArea width="md" name="desc" />
-      </ModalForm>
       <UpdateForm
         onSubmit={async (value) => {
           const success = await handleUpdate(value);
@@ -349,6 +345,12 @@ const TableList: React.FC = () => {
           />
         )}
       </Drawer>
+      <AddForm
+        addModalOpen={addModalOpen}
+        columns={columns}
+        onCancel={() => handleAddModalOpen(false)}
+        onSubmit={(values) => handleAdd(values)}
+      ></AddForm>
     </PageContainer>
   );
 };
