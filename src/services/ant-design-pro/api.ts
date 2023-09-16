@@ -40,18 +40,12 @@ export async function getNotices(options?: { [key: string]: any }) {
   });
 }
 
-/** 获取规则列表 GET /api/rule */
-export async function rule(
-  params: {
-    // query
-    /** 当前的页码 */
-    current?: number;
-    /** 页面的容量 */
-    pageSize?: number;
-  },
-  options?: { [key: string]: any },
+/** 获取接口列表 GET  */
+export async function ListInterfaceInfo(
+  params: { pageSize: number; page: number },
+  options?: { [p: string]: any },
 ) {
-  return request<API.RuleList>('/api/rule', {
+  return request<any>('/api/interfaceInfo/list', {
     method: 'GET',
     params: {
       ...params,

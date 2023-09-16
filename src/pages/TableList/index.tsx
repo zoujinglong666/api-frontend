@@ -1,4 +1,10 @@
-import { addRule, removeRule, rule, updateRule } from '@/services/ant-design-pro/api';
+import {
+  addRule,
+  ListInterfaceInfo,
+  removeRule,
+  rule,
+  updateRule,
+} from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
@@ -109,14 +115,8 @@ const TableList: React.FC = () => {
 
   const columns: ProColumns<API.RuleListItem>[] = [
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.updateForm.ruleName.nameLabel"
-          defaultMessage="Rule name"
-        />
-      ),
+      title: '接口名称',
       dataIndex: 'name',
-      tip: 'The rule name is the unique key',
       render: (dom, entity) => {
         return (
           <a
@@ -132,24 +132,15 @@ const TableList: React.FC = () => {
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleDesc" defaultMessage="Description" />,
-      dataIndex: 'desc',
-      valueType: 'textarea',
+      dataIndex: 'description',
     },
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleCallNo"
-          defaultMessage="Number of service calls"
-        />
-      ),
-      dataIndex: 'callNo',
-      sorter: true,
-      hideInForm: true,
-      renderText: (val: string) =>
-        `${val}${intl.formatMessage({
-          id: 'pages.searchTable.tenThousand',
-          defaultMessage: ' 万 ',
-        })}`,
+      title: '接口方法',
+      dataIndex: 'method',
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleStatus" defaultMessage="Status" />,
@@ -171,50 +162,6 @@ const TableList: React.FC = () => {
           ),
           status: 'Processing',
         },
-        2: {
-          text: (
-            <FormattedMessage id="pages.searchTable.nameStatus.online" defaultMessage="Online" />
-          ),
-          status: 'Success',
-        },
-        3: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.abnormal"
-              defaultMessage="Abnormal"
-            />
-          ),
-          status: 'Error',
-        },
-      },
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleUpdatedAt"
-          defaultMessage="Last scheduled time"
-        />
-      ),
-      sorter: true,
-      dataIndex: 'updatedAt',
-      valueType: 'dateTime',
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return (
-            <Input
-              {...rest}
-              placeholder={intl.formatMessage({
-                id: 'pages.searchTable.exception',
-                defaultMessage: 'Please enter the reason for the exception!',
-              })}
-            />
-          );
-        }
-        return defaultRender(item);
       },
     },
     {
@@ -229,14 +176,9 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          <FormattedMessage id="pages.searchTable.config" defaultMessage="Configuration" />
+          详情
         </a>,
-        <a key="subscribeAlert" href="https://procomponents.ant.design/">
-          <FormattedMessage
-            id="pages.searchTable.subscribeAlert"
-            defaultMessage="Subscribe to alerts"
-          />
-        </a>,
+        <a key="subscribeAlert">删除</a>,
       ],
     },
   ];
@@ -264,7 +206,30 @@ const TableList: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        request={rule}
+        // @ts-ignore
+        request={async (
+          // 第一个参数 params 查询表单和 params 参数的结合
+          // 第一个参数中一定会有 pageSize 和  current ，这两个参数是 antd 的规范
+          params: {
+            pageSize: number;
+            current: number;
+          },
+        ) => {
+          // 这里需要返回一个 Promise,在返回之前你可以进行数据转化
+          // 如果需要转化参数可以在这里进行修改
+          const res = await ListInterfaceInfo({
+            page: params.current,
+            pageSize: params.pageSize,
+          });
+          return {
+            data: res.data,
+            // success 请返回 true，
+            // 不然 table 会停止解析数据，即使有数据
+            success: true,
+            // 不传会使用 data 的长度，如果是分页一定要传
+            total: res.data?.length,
+          };
+        }}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
