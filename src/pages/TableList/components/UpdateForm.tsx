@@ -20,7 +20,7 @@ export type AddFormProps = {
   values: any;
 };
 
-const AddForm: React.FC<AddFormProps> = (props) => {
+const UpdateForm: React.FC<AddFormProps> = (props) => {
   let { addModalOpen, columns, onCancel, onSubmit, values } = props;
   const formRef = useRef<ProFormInstance>();
 
@@ -45,4 +45,4 @@ const AddForm: React.FC<AddFormProps> = (props) => {
   );
 };
 
-export default AddForm;
+export default UpdateForm;

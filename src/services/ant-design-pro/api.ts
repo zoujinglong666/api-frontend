@@ -93,6 +93,31 @@ export async function delInterfaceInfo(body: any, options?: { [key: string]: any
   });
 }
 
+export async function removeInterfaceInfoByIds(body: any, options?: { [key: string]: any }) {
+  console.log(body);
+  return request<any>('/api/interfaceInfo/removeIds', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+export async function onlineInterfaceInfo(body: any, options?: { [key: string]: any }) {
+  return request<any>('/api/interfaceInfo/online', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+export async function offlineInterfaceInfo(body: any, options?: { [key: string]: any }) {
+  return request<any>('/api/interfaceInfo/offline', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 删除规则 DELETE /api/rule */
 export async function removeRule(options?: { [key: string]: any }) {
   return request<Record<string, any>>('/api/rule', {

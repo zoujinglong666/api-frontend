@@ -2,6 +2,9 @@ import {
   addInterfaceInfo,
   delInterfaceInfo,
   ListInterfaceInfo,
+  offlineInterfaceInfo,
+  onlineInterfaceInfo,
+  removeInterfaceInfoByIds,
   updateInterfaceInfo,
 } from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
@@ -28,6 +31,25 @@ const TableList: React.FC = () => {
   const reset = () => {
     handleAddModalOpen(false);
     setCurrentRow({});
+  };
+  const handleOnline = async (currentRow: any) => {
+    const res = await onlineInterfaceInfo({
+      id: currentRow.id,
+    });
+    if (res.code === 0) {
+      message.success('上线成功');
+      reload();
+    }
+  };
+
+  const handleOffline = async (currentRow: any) => {
+    const res = await offlineInterfaceInfo({
+      id: currentRow.id,
+    });
+    if (res.code === 0) {
+      message.success('下线成功');
+      reload();
+    }
   };
 
   const closeUpdateModal = () => {
@@ -61,6 +83,16 @@ const TableList: React.FC = () => {
     } catch (error) {
       message.error('修改失败');
       return false;
+    }
+  };
+  const removeByIds = async () => {
+    const ids = selectedRowsState.map((item) => item.id);
+    if (ids.length) {
+      const res = await removeInterfaceInfoByIds(ids);
+      if (res.data) {
+        message.success('删除成功');
+        reload();
+      }
     }
   };
 
@@ -170,6 +202,23 @@ const TableList: React.FC = () => {
           详情
         </a>,
         <a
+          key="config"
+          onClick={() => {
+            handleOnline(record);
+          }}
+        >
+          上线
+        </a>,
+        <a
+          key="config"
+          onClick={() => {
+            handleOffline(record);
+          }}
+        >
+          下线
+        </a>,
+
+        <a
           key="subscribeAlert"
           onClick={() => {
             delInterfaceInfoById(record?.id);
@@ -250,8 +299,6 @@ const TableList: React.FC = () => {
                   id="pages.searchTable.totalServiceCalls"
                   defaultMessage="Total number of service calls"
                 />{' '}
-                {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '}
-                <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万" />
               </span>
             </div>
           }
@@ -259,7 +306,7 @@ const TableList: React.FC = () => {
           <Button
             onClick={async () => {
               setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
+              await removeByIds();
             }}
           >
             <FormattedMessage
