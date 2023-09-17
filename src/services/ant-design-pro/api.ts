@@ -63,13 +63,32 @@ export async function updateRule(options?: { [key: string]: any }) {
 }
 
 export async function addInterfaceInfo(body: any, options?: { [key: string]: any }) {
-  console.log(body);
   return request<any>('/api/interfaceInfo/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    data: JSON.stringify(body),
+    data: body,
+    ...(options || {}),
+  });
+}
+
+export async function updateInterfaceInfo(body: any, options?: { [key: string]: any }) {
+  return request<any>('/api/interfaceInfo/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+export async function delInterfaceInfo(body: any, options?: { [key: string]: any }) {
+  console.log(body);
+  return request<any>('/api/interfaceInfo/delete', {
+    method: 'POST',
+    data: body,
     ...(options || {}),
   });
 }

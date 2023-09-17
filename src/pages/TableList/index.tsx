@@ -1,118 +1,86 @@
 import {
   addInterfaceInfo,
+  delInterfaceInfo,
   ListInterfaceInfo,
-  removeRule,
-  updateRule,
+  updateInterfaceInfo,
 } from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  PageContainer,
-  ProDescriptions,
-  ProTable,
-} from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { FooterToolbar, PageContainer, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, message } from 'antd';
+import { Button, message } from 'antd';
 import React, { useRef, useState } from 'react';
-import type { FormValueType } from './components/UpdateForm';
-import UpdateForm from './components/UpdateForm';
-import AddForm from '@/pages/TableList/components/addForm';
+import AddForm from '@/pages/TableList/components/AddForm';
+import UpdateForm from '@/pages/TableList/components/UpdateForm';
 
 const TableList: React.FC = () => {
-  /**
-   * @en-US Pop-up window of new window
-   * @zh-CN 新建窗口的弹窗
-   *  */
   const [addModalOpen, handleAddModalOpen] = useState<boolean>(false);
-  /**
-   * @en-US The pop-up window of the distribution update window
-   * @zh-CN 分布更新窗口的弹窗
-   * */
   const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
-
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
-
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
+  const [currentRow, setCurrentRow] = useState<any>();
+  const [selectedRowsState, setSelectedRows] = useState<any[]>([]);
   const intl = useIntl();
-  /**
-   * @en-US Add node
-   * @zh-CN 添加节点
-   * @param fields
-   */
+  const reload = () => {
+    if (actionRef) {
+      actionRef.current?.reload();
+    }
+  };
+  const reset = () => {
+    handleAddModalOpen(false);
+    setCurrentRow({});
+  };
+
+  const closeUpdateModal = () => {
+    handleUpdateModalOpen(false);
+  };
   const handleAdd = async (fields: any) => {
-    const hide = message.loading('正在添加');
     try {
+      console.log(fields);
       const res = await addInterfaceInfo({ ...fields });
       if (res.code === 0) {
-        hide();
         message.success('添加成功');
-        handleAddModalOpen(false);
+        reset();
+        reload();
         return true;
       }
     } catch (error) {
-      hide();
       message.error('添加失败');
       return false;
     }
   };
 
-  /**
-   * @en-US Update node
-   * @zh-CN 更新节点
-   *
-   * @param fields
-   */
-  const handleUpdate = async (fields: FormValueType) => {
-    const hide = message.loading('Configuring');
+  const handleUpdate = async (fields: any) => {
     try {
-      await updateRule({
-        name: fields.name,
-        desc: fields.desc,
-        key: fields.key,
-      });
-      hide();
-
-      message.success('Configuration is successful');
-      return true;
+      const res = await updateInterfaceInfo({ ...fields, id: currentRow.id });
+      if (res.code === 0) {
+        message.success('修改成功');
+        closeUpdateModal();
+        reload();
+        return true;
+      }
     } catch (error) {
-      hide();
-      message.error('Configuration failed, please try again!');
+      message.error('修改失败');
       return false;
     }
   };
 
-  /**
-   *  Delete node
-   * @zh-CN 删除节点
-   *
-   * @param selectedRows
-   */
-  const handleRemove = async (selectedRows: API.RuleListItem[]) => {
-    const hide = message.loading('正在删除');
-    if (!selectedRows) return true;
-    try {
-      await removeRule({
-        key: selectedRows.map((row) => row.key),
-      });
-      hide();
-      message.success('Deleted successfully and will refresh soon');
-      return true;
-    } catch (error) {
-      hide();
-      message.error('Delete failed, please try again');
-      return false;
+  const delInterfaceInfoById = async (id: number) => {
+    if (id <= 0) {
+      return;
+    }
+    const res = await delInterfaceInfo({ id: id });
+    if (res.data) {
+      message.success('删除成功');
+      reload();
     }
   };
 
-  const columns: ProColumns<API.RuleListItem>[] = [
+  const columns: ProColumns<any>[] = [
+    {
+      title: 'id',
+      dataIndex: 'id',
+      valueType: 'index',
+    },
     {
       title: '接口名称',
       dataIndex: 'name',
@@ -121,7 +89,6 @@ const TableList: React.FC = () => {
           <a
             onClick={() => {
               setCurrentRow(entity);
-              setShowDetail(true);
             }}
           >
             {dom}
@@ -202,7 +169,14 @@ const TableList: React.FC = () => {
         >
           详情
         </a>,
-        <a key="subscribeAlert">删除</a>,
+        <a
+          key="subscribeAlert"
+          onClick={() => {
+            delInterfaceInfoById(record?.id);
+          }}
+        >
+          删除
+        </a>,
       ],
     },
   ];
@@ -226,6 +200,7 @@ const TableList: React.FC = () => {
             key="primary"
             onClick={() => {
               handleAddModalOpen(true);
+              setCurrentRow({});
             }}
           >
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
@@ -283,7 +258,6 @@ const TableList: React.FC = () => {
         >
           <Button
             onClick={async () => {
-              await handleRemove(selectedRowsState);
               setSelectedRows([]);
               actionRef.current?.reloadAndRest?.();
             }}
@@ -293,64 +267,22 @@ const TableList: React.FC = () => {
               defaultMessage="Batch deletion"
             />
           </Button>
-          <Button type="primary">
-            <FormattedMessage
-              id="pages.searchTable.batchApproval"
-              defaultMessage="Batch approval"
-            />
-          </Button>
         </FooterToolbar>
       )}
-      <UpdateForm
-        onSubmit={async (value) => {
-          const success = await handleUpdate(value);
-          if (success) {
-            handleUpdateModalOpen(false);
-            setCurrentRow(undefined);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        onCancel={() => {
-          handleUpdateModalOpen(false);
-          if (!showDetail) {
-            setCurrentRow(undefined);
-          }
-        }}
-        updateModalOpen={updateModalOpen}
-        values={currentRow || {}}
-      />
 
-      <Drawer
-        width={600}
-        open={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
-        }}
-        closable={false}
-      >
-        {currentRow?.name && (
-          <ProDescriptions<API.RuleListItem>
-            column={2}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.name,
-            }}
-            columns={columns as ProDescriptionsItemProps<API.RuleListItem>[]}
-          />
-        )}
-      </Drawer>
       <AddForm
         addModalOpen={addModalOpen}
         columns={columns}
-        onCancel={() => handleAddModalOpen(false)}
+        onCancel={() => reset()}
         onSubmit={(values) => handleAdd(values)}
       ></AddForm>
+      <UpdateForm
+        addModalOpen={updateModalOpen}
+        columns={columns}
+        onCancel={() => closeUpdateModal()}
+        onSubmit={(values) => handleUpdate(values)}
+        values={currentRow}
+      ></UpdateForm>
     </PageContainer>
   );
 };

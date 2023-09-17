@@ -46,7 +46,7 @@ export default [
     ],
   },
   {
-    name: 'list.table-list',
+    name: '接口信息',
     icon: 'table',
     path: '/list',
     component: './TableList',

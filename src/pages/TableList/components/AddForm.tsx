@@ -1,6 +1,8 @@
 import { ProTable } from '@ant-design/pro-components';
 import { Modal } from 'antd';
-import React from 'react';
+import React, { useRef } from 'react';
+// @ts-ignore
+import { ProFormInstance } from '@ant-design/pro-form/lib';
 
 export type FormValueType = {
   target?: string;
@@ -16,13 +18,14 @@ export type AddFormProps = {
   addModalOpen: boolean;
   columns: any;
 };
-
 const AddForm: React.FC<AddFormProps> = (props) => {
   let { addModalOpen, columns, onCancel, onSubmit } = props;
+  const formRef = useRef<ProFormInstance>();
   return (
     <>
-      <Modal visible={addModalOpen} onCancel={() => onCancel?.()} footer={null}>
+      <Modal title={'新增接口信息'} open={addModalOpen} onCancel={() => onCancel?.()} footer={null}>
         <ProTable
+          formRef={formRef}
           type={'form'}
           columns={columns}
           onSubmit={async (value) => {
