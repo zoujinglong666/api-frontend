@@ -137,8 +137,8 @@ export default defineConfig({
   openAPI: [
     {
       requestLibPath: "import { request } from '@umijs/max'",
-      schemaPath: 'https://gw.alipayobjects.com/os/antfincdn/CA1dOm%2631B/openapi.json',
-      projectName: 'zoujinglong',
+      schemaPath: 'http://localhost:7529/api/v3/api-docs',
+      projectName: 'zouAPI',
     },
   ],
   mfsu: {

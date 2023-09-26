@@ -137,6 +137,11 @@ const TableList: React.FC = () => {
       dataIndex: 'method',
     },
     {
+      title: '接口参数',
+      dataIndex: 'userRequestParams',
+      valueType: 'jsonCode',
+    },
+    {
       title: '接口类型',
       dataIndex: 'type',
     },
@@ -287,22 +292,7 @@ const TableList: React.FC = () => {
         }}
       />
       {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen" />{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              <FormattedMessage id="pages.searchTable.item" defaultMessage="项" />
-              &nbsp;&nbsp;
-              <span>
-                <FormattedMessage
-                  id="pages.searchTable.totalServiceCalls"
-                  defaultMessage="Total number of service calls"
-                />{' '}
-              </span>
-            </div>
-          }
-        >
+        <FooterToolbar>
           <Button
             onClick={async () => {
               setSelectedRows([]);

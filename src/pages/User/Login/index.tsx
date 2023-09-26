@@ -1,5 +1,4 @@
 import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { useEmotionCss } from '@ant-design/use-emotion-css';
@@ -7,6 +6,7 @@ import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from
 import { Alert, message, Tabs } from 'antd';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
+import { userLoginUsingPOST } from '@/services/zouAPI/userController';
 
 const Lang = () => {
   const langClassName = useEmotionCss(({ token }) => {
@@ -62,29 +62,35 @@ const Login: React.FC = () => {
   });
 
   const intl = useIntl();
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: API.UserLoginRequest) => {
     try {
       // 登录
-      const res = await login({ ...values });
-      if (res.code === 0) {
-        const defaultLoginSuccessMessage = intl.formatMessage({
-          id: 'pages.login.success',
-          defaultMessage: '登录成功！',
-        });
-        message.success(defaultLoginSuccessMessage);
+      const res = await userLoginUsingPOST({
+        ...values,
+      });
+      // 如果登录成功（响应有数据）
+      if (res.data) {
+        // 获取当前URL的查询参数
         const urlParams = new URL(window.location.href).searchParams;
+        // 设置一个延迟100毫秒的定时器
+        // 定时器触发后，导航到重定向URL，如果没有重定向URL，则导航到根路径
+        setTimeout(() => {
+          history.push(urlParams.get('redirect') || '/');
+        }, 100);
+        // 更新全局状态，设置登录用户的信息
         setInitialState({
           loginUser: res.data,
         });
-        history.push(urlParams.get('redirect') || '/');
+
         return;
       }
-      // 如果失败去设置用户错误信息
+      // 如果抛出异常
     } catch (error) {
-      const defaultLoginFailureMessage = intl.formatMessage({
-        id: 'pages.login.failure',
-        defaultMessage: '登录失败，请重试！',
-      });
+      // 定义默认的登录失败消息
+      const defaultLoginFailureMessage = '登录失败，请重试！';
+      // 在控制台打印出错误
+      console.log(error);
+      // 使用 message 组件显示错误信息
       message.error(defaultLoginFailureMessage);
     }
   };

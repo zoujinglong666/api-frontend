@@ -1,32 +1,48 @@
 import Footer from '@/components/Footer';
 import { Question, SelectLang } from '@/components/RightContent';
-import { SettingDrawer } from '@ant-design/pro-components';
+import { getLoginUserUsingGET } from '@/services/zouAPI/userController';
+import { LinkOutlined } from '@ant-design/icons';
+import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
-import { history } from '@umijs/max';
-import { errorConfig } from './requestErrorConfig';
-import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
-import React from 'react';
+import { history, Link } from '@umijs/max';
+import defaultSettings from '../config/defaultSettings';
 import { AvatarDropdown, AvatarName } from './components/RightContent/AvatarDropdown';
+import { requestConfig } from './requestConfig';
 
+const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
  * */
-export async function getInitialState(): Promise<InitState> {
-  const state = {
-    loginUser: undefined,
+export async function getInitialState(): Promise<InitialState> {
+  const fetchUserInfo = async () => {
+    try {
+      const res = await getLoginUserUsingGET();
+      return res.data;
+    } catch (error) {
+      history.push(loginPath);
+    }
+    return undefined;
   };
-  const res = await queryCurrentUser();
-  if (res.data) {
-    // @ts-ignore
-    state.loginUser = res.data;
+  // 如果不是登录页面，执行
+  const { location } = history;
+  if (location.pathname !== loginPath) {
+    const loginUser = await getLoginUserUsingGET();
+    return {
+      fetchUserInfo,
+      loginUser: loginUser.data,
+      settings: defaultSettings as Partial<LayoutSettings>,
+    };
   }
-  return state;
+  return {
+    fetchUserInfo,
+    settings: defaultSettings as Partial<LayoutSettings>,
+  };
 }
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
-export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
     actionsRender: () => [<Question key="doc" />, <SelectLang key="SelectLang" />],
     avatarProps: {
@@ -37,7 +53,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       },
     },
     waterMarkProps: {
-      content: initialState?.loginUser?.username,
+      content: initialState?.loginUser?.userName,
     },
     footerRender: () => <Footer />,
     onPageChange: () => {
@@ -67,28 +83,21 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         width: '331px',
       },
     ],
+    links: isDev
+      ? [
+          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+            <LinkOutlined />
+            <span>OpenAPI 文档</span>
+          </Link>,
+        ]
+      : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
     childrenRender: (children) => {
       // if (initialState?.loading) return <PageLoading />;
-      return (
-        <>
-          {children}
-          <SettingDrawer
-            disableUrlParams
-            enableDarkTheme
-            settings={initialState?.settings}
-            onSettingChange={(settings) => {
-              setInitialState((preInitialState) => ({
-                ...preInitialState,
-                settings,
-              }));
-            }}
-          />
-        </>
-      );
+      return <>{children}</>;
     },
     ...initialState?.settings,
   };
@@ -100,5 +109,5 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request = {
-  ...errorConfig,
+  ...requestConfig,
 };

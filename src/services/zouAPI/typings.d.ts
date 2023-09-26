@@ -5,6 +5,12 @@ declare namespace API {
     message?: string;
   };
 
+  type BaseResponseInterfaceInfo = {
+    code?: number;
+    data?: InterfaceInfo;
+    message?: string;
+  };
+
   type BaseResponseListInterfaceInfoVo = {
     code?: number;
     data?: InterfaceInfoVo[];
@@ -26,6 +32,12 @@ declare namespace API {
   type BaseResponselong = {
     code?: number;
     data?: number;
+    message?: string;
+  };
+
+  type BaseResponseobject = {
+    code?: number;
+    data?: Record<string, any>;
     message?: string;
   };
 
@@ -63,6 +75,16 @@ declare namespace API {
     id?: number;
   };
 
+  type getInterfaceInfoByIdUsingGETParams = {
+    /** id */
+    id?: number;
+  };
+
+  type getInvokeCountUsingPOSTParams = {
+    /** id */
+    id?: number;
+  };
+
   type getPostByIdUsingGETParams = {
     /** id */
     id?: number;
@@ -73,7 +95,44 @@ declare namespace API {
     id?: number;
   };
 
+  type IdRequest = {
+    id?: number;
+  };
+
+  type InterfaceInfo = {
+    createTime?: string;
+    description?: string;
+    id?: number;
+    isDelete?: number;
+    method?: string;
+    name?: string;
+    reponseHeader?: string;
+    requestHeader?: string;
+    status?: number;
+    type?: string;
+    updateTime?: string;
+    url?: string;
+    userId?: number;
+    userRequestParams?: string;
+  };
+
   type InterfaceInfoAddRequest = {
+    description?: string;
+    method?: string;
+    name?: string;
+    reponseHeader?: string;
+    requestHeader?: string;
+    type?: string;
+    url?: string;
+    userRequestParams?: string;
+  };
+
+  type InterfaceInfoInvokeRequest = {
+    id?: number;
+    userRequestParams?: string;
+  };
+
+  type InterfaceInfoUpdateRequest = {
     description?: string;
     id?: number;
     method?: string;
@@ -82,6 +141,7 @@ declare namespace API {
     requestHeader?: string;
     type?: string;
     url?: string;
+    userRequestParams?: string;
   };
 
   type InterfaceInfoVo = {
@@ -97,7 +157,8 @@ declare namespace API {
     type?: string;
     updateTime?: string;
     url?: string;
-    userid?: number;
+    userId?: number;
+    userRequestParams?: string;
   };
 
   type listInterfaceInfoUsingGETParams = {

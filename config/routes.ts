@@ -23,10 +23,17 @@ export default [
     ],
   },
   {
-    path: '/welcome',
+    path: '/',
     name: 'welcome',
     icon: 'smile',
-    component: './Welcome',
+    component: './Index',
+  },
+  {
+    path: '/interface_details/:id',
+    name: 'interface_details',
+    icon: 'smile',
+    component: './InterfaceDetails/index.tsx',
+    hideInMenu: true,
   },
   {
     path: '/admin',
